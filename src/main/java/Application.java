@@ -52,8 +52,21 @@ public class Application {
     public String deleteMethod(@RequestBody String json) {
         JSONObject jsonObject = new JSONObject(json); // Парсим JSON строку
 
-        String piza = jsonObject.getJSONObject("delete").toString();
-        System.out.println(piza);
+        String alertIndex = jsonObject.getJSONObject("delete").opt("alertIndex").toString();
+        String tickerName = jsonObject.getJSONObject("delete").opt("tickerName").toString();
+        System.out.println("alertIndex = " + alertIndex + "tickerName = " + tickerName);
+
+        JSONArray tickers = jsonObject.getJSONObject("info").getJSONArray("tickers");
+
+        for (int i = 0; i < tickers.length();i++) {
+            JSONObject ticker = tickers.getJSONObject(i);
+            String getIndexTicker = ticker.opt("ticker").toString();
+            String getIndexAlert = ticker.opt("alertIndex").toString();
+            if (ticker.get("ticker") == tickerName) {
+                jsonObject.remove(getIndexTicker);
+            }
+            System.out.println(ticker);
+        }
         jsonObject.remove("delete");
 
         // обновляем текущее время в ответе
