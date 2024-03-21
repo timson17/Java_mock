@@ -1,6 +1,7 @@
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,6 +46,20 @@ public class Application {
         String currentTime = currentTime_raw[0];
         JSONObject result = jsonObject.put("lastUpdate",currentTime);
 
+        return result.toString();
+    }
+    @DeleteMapping("/test")
+    public String deleteMethod(@RequestBody String json) {
+        JSONObject jsonObject = new JSONObject(json); // Парсим JSON строку
+
+        String piza = jsonObject.getJSONObject("delete").toString();
+        System.out.println(piza);
+        jsonObject.remove("delete");
+
+        // обновляем текущее время в ответе
+        String[] currentTime_raw = OffsetDateTime.now().toString().split("\\.");
+        String currentTime = currentTime_raw[0];
+        JSONObject result = jsonObject.put("lastUpdate",currentTime);
 
         return result.toString();
     }
