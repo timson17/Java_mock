@@ -51,29 +51,28 @@ public class Application {
     @DeleteMapping("/test")
     public String deleteMethod(@RequestBody String json) {
         JSONObject jsonObject = new JSONObject(json); // Парсим JSON строку
-
+        // вытащил алерт индекс и тикер нейм
         String alertIndex = jsonObject.getJSONObject("delete").opt("alertIndex").toString();
         String tickerName = jsonObject.getJSONObject("delete").opt("tickerName").toString();
-        System.out.println("alertIndex = " + alertIndex + "tickerName = " + tickerName);
-
-        JSONArray tickers = jsonObject.getJSONObject("info").getJSONArray("tickers");
-
-        for (int i = 0; i < tickers.length();i++) {
-            JSONObject ticker = tickers.getJSONObject(i);
-            String getIndexTicker = ticker.opt("ticker").toString();
-            String getIndexAlert = ticker.opt("alertIndex").toString();
-            if (ticker.get("ticker") == tickerName) {
-                jsonObject.remove(getIndexTicker);
-            }
-            System.out.println(ticker);
-        }
-        jsonObject.remove("delete");
 
         // обновляем текущее время в ответе
         String[] currentTime_raw = OffsetDateTime.now().toString().split("\\.");
         String currentTime = currentTime_raw[0];
         JSONObject result = jsonObject.put("lastUpdate",currentTime);
 
+        // длинна тикеров
+        JSONArray countTickers = jsonObject.getJSONObject("info").getJSONArray("tickers");
+
+        // удаляем тикер
+        for (int i = 0; i < countTickers.length(); i++) {
+            JSONObject ticker = countTickers.getJSONObject(i);
+
+            if (ticker.toString().contains(tickerName)) {
+                JSONArray alerts = ticker.getJSONArray("alerts");
+                alerts.remove(Integer.parseInt(alertIndex)); // Удаляем из алертов нужный тикер
+            }
+        }
+        result.remove("delete"); // Удаляем ключ delete и его значения
         return result.toString();
     }
 }
