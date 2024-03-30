@@ -50,29 +50,41 @@ public class Application {
     }
     @DeleteMapping("/test")
     public String deleteMethod(@RequestBody String json) {
-        JSONObject jsonObject = new JSONObject(json); // Парсим JSON строку
-        // вытащил алерт индекс и тикер нейм
-        String alertIndex = jsonObject.getJSONObject("delete").opt("alertIndex").toString();
-        String tickerName = jsonObject.getJSONObject("delete").opt("tickerName").toString();
+        JSONObject result = new JSONObject();
+        try {
+            JSONObject jsonObject = new JSONObject(json); // Парсим JSON строку
+            // вытащил алерт индекс и тикер нейм
+            String alertIndex = jsonObject.getJSONObject("delete").opt("alertIndex").toString();
+            String tickerName = jsonObject.getJSONObject("delete").opt("tickerName").toString();
 
-        // обновляем текущее время в ответе
-        String[] currentTime_raw = OffsetDateTime.now().toString().split("\\.");
-        String currentTime = currentTime_raw[0];
-        JSONObject result = jsonObject.put("lastUpdate",currentTime);
+            // обновляем текущее время в ответе
+            String[] currentTime_raw = OffsetDateTime.now().toString().split("\\.");
+            String currentTime = currentTime_raw[0];
+            result = jsonObject.put("lastUpdate",currentTime);
 
-        // длинна тикеров
-        JSONArray countTickers = jsonObject.getJSONObject("info").getJSONArray("tickers");
+            // длина тикеров
+            JSONArray countTickers = jsonObject.getJSONObject("info").getJSONArray("tickers");
 
-        // удаляем тикер
-        for (int i = 0; i < countTickers.length(); i++) {
-            JSONObject ticker = countTickers.getJSONObject(i);
+            // удаляем тикер
+            for (int i = 0; i < countTickers.length(); i++) {
+                JSONObject ticker = countTickers.getJSONObject(i);
 
-            if (ticker.toString().contains(tickerName)) {
-                JSONArray alerts = ticker.getJSONArray("alerts");
-                alerts.remove(Integer.parseInt(alertIndex)); // Удаляем из алертов нужный тикер
+                if (ticker.toString().contains(tickerName)) {
+                    JSONArray alerts = ticker.getJSONArray("alerts");
+                    alerts.remove(Integer.parseInt(alertIndex)); // Удаляем из алертов нужный тикер
+                }
             }
+            result.remove("delete"); // Удаляем ключ delete и его значения
+            return result.toString();
         }
-        result.remove("delete"); // Удаляем ключ delete и его значения
-        return result.toString();
+        catch (Exception e) {
+            result.put("status", "error");
+            result.put("message", "Передан некорректный action - update");
+            return result.toString(); // Возвращаем объект JSONObject с ошибкой
+        }
+        finally {
+            return result.toString();
+        }
+
     }
 }
